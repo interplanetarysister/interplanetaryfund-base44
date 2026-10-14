@@ -1,36 +1,16 @@
-name: Quality Gates
-
+# Manual-only legacy workflow. IFund2 owns all production work.
+name: "Base44 service readiness (manual)"
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
 permissions:
   contents: read
-
 jobs:
-  verify:
-    runs-on: ubuntu-latest
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
-
-      - name: Set up Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Build
-        run: npm run build
+      - name: Check published website without changing anything
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 20 https://interplanetaryfund.base44.app/ -o /tmp/ifund.html
+          grep -Eiq '<html|<!doctype' /tmp/ifund.html
